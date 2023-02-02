@@ -11,7 +11,8 @@ $totalResolved = 0;
 $totalReply = 0;
 $fdate = date("Y-m-d");
 $tdate = date("Y-m-d");
-$team = 'All';
+$team = null;
+$agent = null;
 $defultPic  = "/bundles/uvdeskcoreframework/images/uv-avatar-batman.png";
 $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 ?>
@@ -22,7 +23,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 <head>
 	<meta charset="UTF-8">
 	<title>Help Desk Report</title>
-	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="image/favicon.png">
+	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="favicon.ico">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
   
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -50,7 +51,10 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 			width:32.5%;
 			margin-left: 5px;
 		}
-		 
+		 .fa{
+			text-shadow: 0px 0px 10px black;
+			color: white;
+		 }
 	</style>
 </head>
 
@@ -122,7 +126,8 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 			  <?php
 				if(isset($_POST['agent'])){
 					$agent = $_POST['agent'];
-					$sql = "SELECT uu.id, CONCAT(uu.first_name,' ', uu.last_name) name, uui.designation,  uui.profile_image_path, usr.description role , ust.name team  
+					$sql = "SELECT uu.id agent_id, ust.id team_id, CONCAT(uu.first_name,' ', uu.last_name) name, uui.designation,  uui.profile_image_path, usr.description role , ust.name team  
+							,date(uui.created_at) agent_sience, date(uui.updated_at) profile_update, uui.contact_number
 							FROM uv_user uu 
 							LEFT JOIN uv_user_instance uui on uui.user_id = uu.id
 							LEFT JOIN uv_support_role usr on usr.id = uui.supportRole_id
@@ -135,8 +140,24 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 					if($row['profile_image_path']!=''){
 					$defultPic = $row['profile_image_path'];
 					}
+					$fdate = $row['agent_sience'];
+					$team = $row['team_id'];
+					$agent = $row['agent_id'];
+					
+					if($team != null && $agent != null){
+						
+						$sql2 = " select count(*) team_total, 
+								sum(case when ut.agent_id = $agent then 1 else 0 end) agent_total, 
+								sum(case when (ut.agent_id = $agent and ut.status_id in (3,4,5)) then 1 else 0 end) agent_complete_total, 
+								sum(case when (ut.agent_id = $agent and ut.status_id in (1,2)) then 1 else 0 end) agent_incomplete_total  
+								from uv_ticket ut
+								where ut.subGroup_id = $team
+								and date(CONVERT_TZ(created_at,'+00:00','+6:00'))  >= '$fdate' ";
+						$result2 = $mysqli->query($sql2);
+						$row2 = $result2->fetch_assoc();
+;					}
 				}
-			  ?>
+			  ?> 
 			  <div class="col-md-12 row" > 
 				<div class="col-md-3" > 
 					<div class="card text-center" >
@@ -152,28 +173,28 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 						<div class="card dash-card ">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" ></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-users fa-3x" ></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['team_total']; ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">Total Team Request</center> 
 							</div>
 						</div>
 						<div class="card dash-card">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" >vc</div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-tasks  fa-3x"></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_total']; ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">Individual Total Requests</center> 
 							</div>
 						</div>
 						<div class="card dash-card">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" >vc</div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-percent fa-3x" ></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['team_total']==0?0:round((($row2['agent_total']/$row2['team_total']) * 100),2); ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">Percent of Request</center> 
 							</div>
 						</div>
 					</div>
@@ -181,35 +202,40 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 						<div class="card dash-card ">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" ></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-check fa-3x" aria-hidden="true"></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_complete_total']; ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">Completed Request</center> 
 							</div>
 						</div>
 						<div class="card dash-card">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" >vc</div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-hourglass-half fa-3x" aria-hidden="true"></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_incomplete_total']; ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">uncompleted Request</center> 
 							</div>
 						</div>
 						<div class="card dash-card">
 							<div class="card-body">
 								<div class="card-title row">
-									<div class="col-sm-4" >vc</div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1">w</center></div>
+									<div class="col-sm-4" ><i class="fa fa-percent fa-3x" ></i></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_total']==0?0:round((($row2['agent_complete_total']/$row2['agent_total']) * 100),2); ?></center></div>
 								</div>
-								<center class="card-text ">Total Request</center> 
+								<center class="card-text ">Percent of Completed</center> 
 							</div>
 						</div>
 					</div>
 					<div class="row mt-3">
 						<div class="card" style="height:100%">
-							<div class="card-body"> 
-								Role: <?php echo $row['role']; ?>
+							<div class="card-body">
+								<div class="row">
+									<div class="col-sm-3">Role: <?php echo $row['role']; ?></div>
+									<div class="col-sm-3">Profile Creation: <?php echo $row['agent_sience']; ?></div>
+									<div class="col-sm-3">Profile Update: <?php echo $row['profile_update']; ?></div>
+									<div class="col-sm-3">Phone Number: <?php echo $row['contact_number']; ?></div>
+								</div> 
 							</div>
 						</div>
 					</div>
