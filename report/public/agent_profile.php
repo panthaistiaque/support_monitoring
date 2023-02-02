@@ -1,5 +1,5 @@
 <?php
-require_once('config.php');
+require_once('config/config.php');
 $mysqli = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
@@ -22,7 +22,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 <head>
 	<meta charset="UTF-8">
 	<title>Help Desk Report</title>
-	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="favicon.ico">
+	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="image/favicon.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
   
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">

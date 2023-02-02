@@ -1,7 +1,7 @@
 <!-- PHP code to establish connection with the localserver -->
 <?php
 
-require_once('config.php');
+require_once('config/config.php');
 $mysqli = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 if ($mysqli->connect_errno) {
     echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
@@ -24,7 +24,7 @@ $team = 'All';
 <head>
 	<meta charset="UTF-8">
 	<title>Dashbord</title>
-	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="favicon.png">
+	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="image/favicon.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -130,7 +130,7 @@ $team = 'All';
 					<div class="card dash-card">
 						<div class="card-body">
 							<div class="card-title row">
-								<div class="col-sm-4" ><image style="width:140%; height:auto;"  src="total.png"/></div>
+								<div class="col-sm-4" ><image style="width:140%; height:auto;"  src="image/total.png"/></div>
 								<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $total;?></center></div>
 							</div>
 							<center class="card-text ">Total Request</center> 
@@ -139,7 +139,7 @@ $team = 'All';
 					<div class="card dash-card">
 						<div class="card-body">
 							<div class="card-title row">
-								<div class="col-sm-4"><image style="width:140%; height:auto;" src="completed.png"/></div>
+								<div class="col-sm-4"><image style="width:140%; height:auto;" src="image/completed.png"/></div>
 								<div class="col-sm-8"><center style="color:#2CD651" class="h1"><a data-type="completed" class="run-php"><?php echo $totalCompleted;?></a></center></div>
 							</div>
 							<center class="card-text ">Completed</center> 
@@ -148,7 +148,7 @@ $team = 'All';
 					<div class="card dash-card">
 						<div class="card-body">
 							<div class="card-title row">
-								<div class="col-sm-4"><image style="width:100%; height:auto;" src="progress.png"/></div>
+								<div class="col-sm-4"><image style="width:100%; height:auto;" src="image/progress.png"/></div>
 								<div class="col-sm-8"><center style="color:#FF6A6B" class="h1"><a data-type="progress" class="run-php"><?php echo $totalProgress;?></a></center></div>
 							</div>
 							<center class="card-text ">In progress</center> 
@@ -157,7 +157,7 @@ $team = 'All';
 					<div class="card dash-card">
 						<div class="card-body">
 							<div class="card-title row">
-								<div class="col-sm-4"><image style="width:140%;; height:auto;" src="open.png"/></div>
+								<div class="col-sm-4"><image style="width:140%;; height:auto;" src="image/open.png"/></div>
 								<div class="col-sm-8"><center style="color:#7E91F0" class="h1"><a data-type="open" class="run-php"><?php echo $totalOpen;?></a></center></div>
 							</div>
 							<center class="card-text ">Open</center> 
@@ -166,7 +166,7 @@ $team = 'All';
 					<div class="card dash-card" >
 						<div class="card-body">
 							<div class="card-title row">
-								<div class="col-sm-4"><image style="width:140%; height:auto;" src="spam.png"/></div>
+								<div class="col-sm-4"><image style="width:140%; height:auto;" src="image/spam.png"/></div>
 								<div class="col-sm-8"><center style="color:#00A1F2" class="h1"><a data-type="spam" class="run-php"><?php echo $totalSpam;?></a></center></div>
 							</div>
 							<center class="card-text ">Spam </center> 
