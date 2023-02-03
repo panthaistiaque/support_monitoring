@@ -1,4 +1,5 @@
 <?php
+require_once('sessions.php');
 require_once('config/config.php');
 $mysqli = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 if ($mysqli->connect_errno) {
@@ -9,12 +10,21 @@ $totalTicket = 0;
 $totalTicketInHand = 0;
 $totalResolved = 0;
 $totalReply = 0;
-$fdate = date("Y-m-d");
-$tdate = date("Y-m-d");
+$fdate = null;
+$tdate = date("Y-m-d"); 
 $team = null;
 $agent = null;
+$agent_name = null;
+$team_name = null;
+$team_total = 0;
+$agent_total = 0;
+$agent_complete_total =0;
+$agent_incomplete_total=0;
+$role = null;
+$profile_update = null;
+$contact_number = null;
 $defultPic  = "/bundles/uvdeskcoreframework/images/uv-avatar-batman.png";
-$defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
+$defultSystyemUrl =BASE_URL;
 ?>
 <!-- HTML code to display data in tabular format -->
 <!DOCTYPE html>
@@ -51,7 +61,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 			width:32.5%;
 			margin-left: 5px;
 		}
-		 .fa{
+		 .fa-3x{
 			text-shadow: 0px 0px 10px black;
 			color: white;
 		 }
@@ -61,7 +71,8 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 <body>
 <div class="container-fluid mt-3">
 	<div class="container-fluid">
-		<div class="row">
+	<?php	include 'topbar.php';?>
+		<div class="row mt-3">
 		  <div class="col-md-2">
 			<?php	include 'menu.php';?>
 		  </div>
@@ -127,7 +138,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 				if(isset($_POST['agent'])){
 					$agent = $_POST['agent'];
 					$sql = "SELECT uu.id agent_id, ust.id team_id, CONCAT(uu.first_name,' ', uu.last_name) name, uui.designation,  uui.profile_image_path, usr.description role , ust.name team  
-							,date(uui.created_at) agent_sience, date(uui.updated_at) profile_update, uui.contact_number
+							,date(uui.created_at) agent_since, date(uui.updated_at) profile_update, uui.contact_number
 							FROM uv_user uu 
 							LEFT JOIN uv_user_instance uui on uui.user_id = uu.id
 							LEFT JOIN uv_support_role usr on usr.id = uui.supportRole_id
@@ -140,10 +151,14 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 					if($row['profile_image_path']!=''){
 					$defultPic = $row['profile_image_path'];
 					}
-					$fdate = $row['agent_sience'];
+					$fdate = $row['agent_since'];
 					$team = $row['team_id'];
 					$agent = $row['agent_id'];
-					
+					$role = $row['role'];;
+					$agent_name = $row['name'];
+					$team_name = $row['team'];
+					$profile_update = $row['profile_update'];
+					$contact_number = $row['contact_number'];
 					if($team != null && $agent != null){
 						
 						$sql2 = " select count(*) team_total, 
@@ -155,6 +170,10 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 								and date(CONVERT_TZ(created_at,'+00:00','+6:00'))  >= '$fdate' ";
 						$result2 = $mysqli->query($sql2);
 						$row2 = $result2->fetch_assoc();
+						$team_total = $row2['team_total'];
+						$agent_total = $row2['agent_total'];
+						$agent_complete_total = $row2['agent_complete_total'];
+						$agent_incomplete_total=$row2['agent_incomplete_total'];
 ;					}
 				}
 			  ?> 
@@ -163,8 +182,8 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 					<div class="card text-center" >
 					  <img class="card-img-top img-fluid" style="width:220px; height:220px; padding: 5px; border-radius: 10px" src="<?php echo $defultSystyemUrl.$defultPic ?>" alt="Card image">
 					  <div class="card-body">
-						<h5 class="card-title"><?php echo $row['name']; ?></h5>
-						<p class="card-text"><?php echo $row['team']; ?></p>
+						<h5 class="card-title"><?php echo $agent_name; ?></h5>
+						<p class="card-text"><?php echo $team_name; ?></p>
 					  </div>
 					</div>
 				</div>	
@@ -174,16 +193,16 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-users fa-3x" ></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['team_total']; ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $team_total; ?></center></div>
 								</div>
-								<center class="card-text ">Total Team Request</center> 
+								<center class="card-text ">Total Team Request <i style="color:green; font-size:10px">since:<?php echo $fdate; ?></i></center> 
 							</div>
 						</div>
 						<div class="card dash-card">
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-tasks  fa-3x"></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_total']; ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $agent_total; ?></center></div>
 								</div>
 								<center class="card-text ">Individual Total Requests</center> 
 							</div>
@@ -192,7 +211,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-percent fa-3x" ></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['team_total']==0?0:round((($row2['agent_total']/$row2['team_total']) * 100),2); ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $team_total==0?0:round((($agent_total/$team_total) * 100),2); ?></center></div>
 								</div>
 								<center class="card-text ">Percent of Request</center> 
 							</div>
@@ -203,7 +222,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-check fa-3x" aria-hidden="true"></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_complete_total']; ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $agent_complete_total; ?></center></div>
 								</div>
 								<center class="card-text ">Completed Request</center> 
 							</div>
@@ -212,7 +231,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-hourglass-half fa-3x" aria-hidden="true"></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_incomplete_total']; ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $agent_incomplete_total; ?></center></div>
 								</div>
 								<center class="card-text ">uncompleted Request</center> 
 							</div>
@@ -221,7 +240,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 							<div class="card-body">
 								<div class="card-title row">
 									<div class="col-sm-4" ><i class="fa fa-percent fa-3x" ></i></div>
-									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $row2['agent_total']==0?0:round((($row2['agent_complete_total']/$row2['agent_total']) * 100),2); ?></center></div>
+									<div class="col-sm-8"><center style="color:#767676" class="h1"><?php echo $agent_total==0?0:round((($agent_complete_total/$agent_total) * 100),2); ?></center></div>
 								</div>
 								<center class="card-text ">Percent of Completed</center> 
 							</div>
@@ -231,10 +250,10 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 						<div class="card" style="height:100%">
 							<div class="card-body">
 								<div class="row">
-									<div class="col-sm-3">Role: <?php echo $row['role']; ?></div>
-									<div class="col-sm-3">Profile Creation: <?php echo $row['agent_sience']; ?></div>
-									<div class="col-sm-3">Profile Update: <?php echo $row['profile_update']; ?></div>
-									<div class="col-sm-3">Phone Number: <?php echo $row['contact_number']; ?></div>
+									<div class="col-sm-3">Role: <?php echo $role; ?></div>
+									<div class="col-sm-3">Profile Creation: <?php echo $fdate; ?></div>
+									<div class="col-sm-3">Profile Update: <?php echo $profile_update; ?></div>
+									<div class="col-sm-3">Phone Number: <?php echo $contact_number; ?></div>
 								</div> 
 							</div>
 						</div>
@@ -253,6 +272,7 @@ $defultSystyemUrl  ="https://helpdesk.apps.friendship.ngo/infosyshd/public";
 	 $("#fdate").val('<?php echo $fdate ?>');
 	 $("#tdate").val('<?php echo $tdate ?>');
 	 $("#team").val('<?php echo $team ?>');
+	 $("#agent").val('<?php echo $agent ?>');
 	 
 	 $('.input-group.date').datepicker({
 	  format: 'yyyy-mm-dd', 

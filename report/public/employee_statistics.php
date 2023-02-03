@@ -22,7 +22,7 @@ $team = 'All';
 <head>
 	<meta charset="UTF-8">
 	<title>Help Desk Report</title>
-	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="image/favicon.png">
+	<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="favicon.ico">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
   
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -99,30 +99,18 @@ $team = 'All';
 				  </div>
 			  </div>
 			  <div class="col-md-12" > 
-					<!-- PHP CODE TO FETCH DATA FROM ROWS -->
 					<?php
 						if(isset($_POST['viewReport'])) {
 						$fdate = $_POST['fdate'];
-						$tdate = $_POST['tdate'];
-						$team = $_POST['team']; 
-						$sql = " select agent, team, count(*) as total,sum(in_hand) in_hand, sum(resolved) resolved, sum(reply) reply from(".
-								" select ut.id, ut.subject, utt.code as type,uts.code as status,ust.name as team,CONCAT(uu.first_name,' ' ,uu.last_name) as agent, case when uts.code in ('closed','resolved','answered' ) then 1 else 0 end as resolved , case when uts.code not in ('closed','resolved','answered' ) then 1 else 0 end as in_hand ".
-								" ,COALESCE(th.reply,0) as reply, CONCAT(DATE_FORMAT(CONVERT_TZ(ut.created_at,'+00:00','+6:00') , '%d %b %Y'),' ',TIME_FORMAT(CONVERT_TZ(ut.created_at,'+00:00','+6:00'), '%h:%i %p'))  created_at  ".
-								" ,DATE_FORMAT(CONVERT_TZ(ut.created_at,'+00:00','+6:00') , '%d %b %Y') date ".
-								" from uv_ticket ut ".
-								" left join uv_ticket_type utt on utt.id = ut.type_id ".
-								" left join uv_ticket_status uts on uts.id = ut.status_id ".
-								" left join uv_support_team ust on ust.id = ut.subGroup_id ".
-								" left join uv_user uu on uu.id = ut.agent_id ".
-								" left join (SELECT ticket_id, count(*) reply FROM uv_thread where thread_type = 'reply' group by ticket_id) th on th.ticket_id = ut.id  ".
-								" where date(CONVERT_TZ(ut.created_at,'+00:00','+6:00')) BETWEEN '$fdate' and '$tdate' ";
-								if ($team!='All') {
-									$sql = $sql." and ust.id =  $team  ";
-								}	
-								
-								$sql = $sql." ) as asd ".
-								" group by agent, team ".
-								" order by team ";
+						$tdate = $_POST['tdate']; 
+						$sql = " select uu.id, CONCAT(uu.first_name,' ', uu.last_name) name, uu.email, uui.designation,  uui.profile_image_path, count(ut.id) total, sum(case when ( ut.status_id in (3,4,5)) then 1 else 0 end) completed, sum(case when ( ut.status_id in (1,2)) then 1 else 0 end) uncompleted
+								from uv_user uu
+								inner join uv_user_instance uui on uui.user_id = uu.id
+								inner join uv_ticket ut on ut.customer_id = uu.id
+								where uui.supportRole_id in (4)
+								and date(CONVERT_TZ(ut.created_at,'+00:00','+6:00')) BETWEEN '$fdate' and date('$tdate')
+								group by uu.id, uu.first_name, uu.last_name, uui.designation,  uui.profile_image_path
+								order by CONCAT(uu.first_name,' ', uu.last_name) asc ";
 						$result = $mysqli->query($sql);
 					?>
 					<table class="table table-bordered table-sm" id="agentActivitySummary">
@@ -133,46 +121,45 @@ $team = 'All';
 							<td colspan="6" style="text-align:center"><?php echo '<b>'.$fdate.'</b> to <b>'.$tdate.'</b>';?></td>
 						</tr>
 						<tr style="background-color:#80808082">
-							<th>Agent Name</th>
-							<th>Team</th>
-							<th style="text-align: right;">Ticket Assigned </th>
-							<th style="text-align: right;">Ticket In Hand</th>
-							<th style="text-align: right;">Ticket Resolved</th>
-							<th style="text-align: right;">No. of Reply</th>
+							<th>Employee Name</th>
+							<th>Sys ID</th>
+							<th >Email</th>
+							<th style="text-align: right;">Total Ticket</th>
+							<th style="text-align: right;">Resolved Ticket</th>
+							<th style="text-align: right;">Unresolved Ticket</th>
 						</tr>
 						<?php
 							while($rows=$result->fetch_assoc())
 							{
 								$totalTicket = $totalTicket+$rows['total'];
-								$totalTicketInHand = $totalTicketInHand+ $rows['in_hand'];
-								$totalResolved = $totalResolved+ $rows['resolved'];
-								$totalReply = $totalReply+ $rows['reply'];
+								$totalTicketInHand = $totalTicketInHand+ $rows['completed'];
+								$totalResolved = $totalResolved+ $rows['uncompleted']; 
 						?>
 						<tr >
 							<!-- FETCHING DATA FROM EACH
 								ROW OF EVERY COLUMN -->
-							<td><?php echo $rows['agent'];?></td>
-							<td><?php echo $rows['team'];?></td>
-							<td style="text-align: right;"><?php echo $rows['total'];?></td>
-							<td style="text-align: right;"><?php echo $rows['in_hand'];?></td> 
-							<td style="text-align: right;"><?php echo $rows['resolved'];?></td> 
-							<td style="text-align: right;"><?php echo $rows['reply'];?></td> 
+							<td><?php echo $rows['name'];?></td>
+							<td><?php echo $rows['id'];?></td>
+							<td><?php echo $rows['email'];?></td>
+							<td style="text-align: right;"><?php echo $rows['total'];?></td> 
+							<td style="text-align: right;"><?php echo $rows['completed'];?></td> 
+							<td style="text-align: right;"><?php echo $rows['uncompleted'];?></td> 
 						</tr>
 						<?php
 							}
 						?>
 						<tr style="background-color:#80808082">
-							<th colspan="2" style="text-align: right;">Total</th>
+							<th colspan="3" style="text-align: right;">Total</th>
 							<th style="text-align: right;"><?php echo $totalTicket;?></th>
 							<th style="text-align: right;"><?php echo $totalTicketInHand;?></th> 
 							<th style="text-align: right;"><?php echo $totalResolved;?></th> 
-							<th style="text-align: right;"><?php echo $totalReply;?></th> 
 						</tr>
 					</table>
 					<?php
 						}
 						mysqli_report(MYSQLI_REPORT_STRICT);
 					?>				
+				</div>								
 				</div>
 			</form>
 		  </div>
@@ -186,7 +173,7 @@ $team = 'All';
 	 $("#fdate").val('<?php echo $fdate ?>');
 	 $("#tdate").val('<?php echo $tdate ?>');
 	 $("#team").val('<?php echo $team ?>');
-	 $('.input-group.date').datepicker({
+	$('.input-group.date').datepicker({
 	  format: 'yyyy-mm-dd', 
       todayHighlight: true,
       autoclose: true,

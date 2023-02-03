@@ -1,6 +1,6 @@
 <!-- PHP code to establish connection with the localserver -->
 <?php
-
+require_once('sessions.php');
 require_once('config/config.php');
 $mysqli = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 if ($mysqli->connect_errno) {
@@ -52,9 +52,10 @@ $team = 'All';
 </head>
 
 <body>  
-<div class="container-fluid mt-3">
+<div class="container-fluid mt-3"> 
 	<div class="container-fluid">
-		<div class="row">
+		<?php	include 'topbar.php';?>
+		<div class="row mt-3">
 			<div class="col-md-2">
 			<?php	include 'menu.php';?>
 			</div>
