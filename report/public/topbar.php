@@ -1,11 +1,23 @@
-<nav class="navbar bg-light" >
-	
-		<a style="margin-left:10px" class="navbar-brand" href="#">
-			<i class="fa fa-tasks"><span> Support Monitoring System</span></i>
-		</a>
-		<div class="navbar-buttons navbar-header pull-right">
-			<span style="font-size:9px"><?php echo 'Loged in :'.$_SESSION['email'].', '; ?>
-			<br/><?php echo 'Loged in time :'.$_SESSION['creation_time']; ?> </span>
-		</div>
-	
+
+
+<nav class="navbar navbar-expand-sm" style=" border: 1px solid #ced4da; border-radius: 5px;">
+  <div class="container-fluid">
+    <a class="navbar-brand" style="font-family: 'Kaushan Script', cursive;" href="#">Support Monitoring System</a>
+	<div class="btn-group dropstart">
+		  <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="font-size:13px">
+			<?php echo $_SESSION['email']; ?>
+		  </div>
+		  <div class="dropdown-menu p-4 text-muted" >
+			  <p class="mb-0" style="font-size:11px">
+				<?php echo $_SESSION['email']; ?>
+			  </p>
+			  <p class="mb-0" style="font-size:11px">
+				<?php echo 'Start at:'.$_SESSION['creation_time']; ?>
+			  </p>
+			  <p class="mb-0" style="font-size:11px">
+				<?php echo 'IP: '.$_SERVER['REMOTE_ADDR']; ?>
+			  </p>
+		   </div>
+	</div>
+  </div>
 </nav>

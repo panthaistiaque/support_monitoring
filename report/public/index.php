@@ -52,9 +52,9 @@ $team = 'All';
 </head>
 
 <body>  
-<div class="container-fluid mt-3"> 
+<div class="container-fluid mt-3">
 	<div class="container-fluid">
-		<?php	include 'topbar.php';?>
+	<?php	include 'topbar.php';?>
 		<div class="row mt-3">
 			<div class="col-md-2">
 			<?php	include 'menu.php';?>
